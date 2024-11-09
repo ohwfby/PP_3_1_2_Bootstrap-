@@ -287,7 +287,8 @@
             var username = button.data('username');
             var password = button.data('password');
             var year = button.data('year');
-            var roles = button.data('roles');
+            var rolesString = button.data('roles');  // Передается как строка: "[ROLE_USER]"
+            var roles = rolesString.replace(/[\[\]]/g, '').split(',').map(role => role.trim());
 
 
             var modal = $(this);
@@ -299,17 +300,18 @@
 
             var select = modal.find('#editRole');
             select.val([]);
+            var roleMapping = {
+                'ROLE_USER': '1',  // Преобразуем строку 'ROLE_USER' в значение '1'
+                'ROLE_ADMIN': '2', // Преобразуем строку 'ROLE_ADMIN' в значение '2'
+                // Если есть другие роли, добавьте их в этот маппинг
+            };
 
-            if (roles.length !== 0) {
-                roles = roles.replace(/[\[\]]/g, '').split(',').map(item => item.trim());
-                roles.forEach((role) => {
-                    select.find('option').each(function () {
-                        if ($(this).val() === role) {
-                            $(this).prop('selected', true);
-                        }
-                    });
-                });
-            }
+            roles.forEach(function(role) {
+                var roleId = roleMapping[role];  // Получаем ID из маппинга
+                if (roleId) {
+                    select.find('option[value="' + roleId + '"]').prop('selected', true);
+                }
+            });
         });
         $('#deleteModal').on('show.bs.modal', function (event) {
             var button = $(event.relatedTarget);
