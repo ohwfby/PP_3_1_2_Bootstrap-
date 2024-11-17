@@ -2,15 +2,19 @@ package ru.kata.spring.boot_security.demo.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import ru.kata.spring.boot_security.demo.entity.User;
 import ru.kata.spring.boot_security.demo.security.UserDetailsImpl;
 import ru.kata.spring.boot_security.demo.service.RoleServiceImpl;
 import ru.kata.spring.boot_security.demo.service.UserDetailsServiceImpl;
 
+import javax.validation.Valid;
 import java.util.stream.Collectors;
 
 @Controller
@@ -27,9 +31,9 @@ public class AdminController {
 
     @GetMapping()
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public String admin(Model model, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public String admin(Model model, @AuthenticationPrincipal UserDetailsImpl userDetails, Authentication authentication) {
         model.addAttribute("users", userDetailsServiceImpl.allUsers());
-        model.addAttribute("username", userDetails.getUsername());
+        model.addAttribute("username", authentication.getName());
         String roles = userDetails.getUser().getRoles()
                 .stream()
                 .map(role -> role.getName().replace("ROLE_", ""))
@@ -41,7 +45,12 @@ public class AdminController {
     }
 
     @PostMapping("/add")
-    public String add(@ModelAttribute("user") User user) {
+    public String add(@ModelAttribute("user") @Valid User user, BindingResult bindingResult, Model model) {
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("roleList", roleServiceImpl.findAllRoles());
+            return "admin"; // Имя HTML шаблона
+// Для повторного отображения списка ролей
+        }
         userDetailsServiceImpl.save(user);
         return "redirect:/admin";
     }

@@ -3,10 +3,7 @@ package ru.kata.spring.boot_security.demo.entity;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.Size;
+import javax.validation.constraints.*;
 import java.util.Collection;
 import java.util.Set;
 
@@ -20,19 +17,23 @@ public class User implements UserDetails {
 
     @Column(nullable = false, unique = true)
     @NotEmpty(message = "Name should not be empty")
-    @NotBlank(message = "Name should not be blank")
+    @NotBlank(message = "Username is required")
     @Size(min = 2, max = 30, message = "Name should be between 2 and 30 characters")
     private String username;
 
     @Column(name = "password")
     @NotEmpty(message = "Password should not be empty")
-    @NotBlank(message = "Password should not be blank")
+    @NotBlank(message = "Password is required")
     @Size(min = 2, max = 68, message = "Password should be between 2 and 30 characters")
     private String password;
 
-    @Min(value = 1900, message = "Year of birth must be over 1900")
+    @NotNull(message = "Year of birth is required")
+    @Min(value = 1900, message = "Year of birth must be greater than 1900")
+    @Max(value = 2024, message = "Year of birth must be less than 2024")
     @Column(name = "year_of_birth")
     private Integer yearOfBirth;
+
+    @NotEmpty(message = "At least one role is required")
     @Column(name = "roles")
     @ManyToMany(fetch = FetchType.LAZY)
     private Set<Role> roles;

@@ -249,20 +249,23 @@
                         <div class="mb-3">
                             <label style="font-weight: bold;" for="username" class="form-label">Username</label>
                             <input type="text" class="form-control" id="username" name="username" placeholder="username" required>
+                            <div th:if="${#fields.hasErrors('username')}" th:errors="*{username}" class="text-danger"></div>
                         </div>
                         <div class="mb-3">
                             <label style="font-weight: bold;" for="password" class="form-label">Password</label>
                             <input type="password" class="form-control" id="password" name="password" placeholder="password" required>
+                            <div th:if="${#fields.hasErrors('password')}" th:errors="*{password}" class="text-danger"></div>
                         </div>
                         <div class="mb-3">
                             <label style="font-weight: bold;" for="yearOfBirth" class="form-label">Year Of Birth</label>
                             <input type="number" class="form-control" id="yearOfBirth" name="yearOfBirth" placeholder="Year of Birth" required>
-
+                            <div th:if="${#fields.hasErrors('yearOfBirth')}" th:errors="*{yearOfBirth}" class="text-danger"></div>
                         </div>
                         <div class="mb-3">
                             <label style="font-weight: bold;" for="roles" class="form-label">Role</label>
                             <select multiple class="form-select" id="roles" name="roles[]" size="2">
                                 <option th:each="role : ${roleList}"  th:value="${role.id}" th:text="${role.name}"></option>
+                                <div th:if="${#fields.hasErrors('roles')}" th:errors="*{roles}" class="text-danger"></div>
                             </select>
                         </div>
                         <button type="submit" class="btn btn-primary">Add User</button>
@@ -320,7 +323,8 @@
             var username = button.data('username');
             var password = button.data('password');
             var age = button.data('age');
-            var roles = button.data('roles');
+            var rolesString = button.data('roles');  // Передается как строка: "[ROLE_USER]"
+            var roles = rolesString.replace(/[\[\]]/g, '').split(',').map(role => role.trim());
 
 
             var modal = $(this);
@@ -332,18 +336,18 @@
 
             var select = modal.find('#deleteRole');
             select.val([]);
+            var roleMapping = {
+                'ROLE_USER': '1',  // Преобразуем строку 'ROLE_USER' в значение '1'
+                'ROLE_ADMIN': '2', // Преобразуем строку 'ROLE_ADMIN' в значение '2'
+                // Если есть другие роли, добавьте их в этот маппинг
+            };
 
-
-            if (roles.length !== 0) {
-                roles = roles.replace(/[\[\]]/g, '').split(',').map(item => item.trim());
-                roles.forEach((role) => {
-                    select.find('option').each(function () {
-                        if ($(this).val() === role) {
-                            $(this).prop('selected', true);
-                        }
-                    });
-                });
-            }
+            roles.forEach(function(role) {
+                var roleId = roleMapping[role];  // Получаем ID из маппинга
+                if (roleId) {
+                    select.find('option[value="' + roleId + '"]').prop('selected', true);
+                }
+            });
         });
     });
 </script>
